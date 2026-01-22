@@ -5,12 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ShyamGuna77/rest-sms/cmd/web"
+	"github.com/ShyamGuna77/rest-sms/internal/web"
 )
 
 func main() {
 
 	mux := http.NewServeMux()
+
+	fileserver := http.FileServer(http.Dir("./ui/static/"))
+	mux.Handle("GET /static/", http.StripPrefix("/static", fileserver))
+
 	mux.HandleFunc("GET /{$}", web.Home)
 	mux.HandleFunc("GET /snippet/view/{id}", web.SnippetView)
 	mux.HandleFunc("GET /snippet/create", web.SnippetCreate)

@@ -2,13 +2,34 @@ package web
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
-	w.Write([]byte("This is Home  snippet box"))
+
+	files := []string{
+		filepath.Join("ui", "html", "base.html"),
+		filepath.Join("ui", "html", "partials", "nav.html"),
+		filepath.Join("ui", "html", "pages", "home.html"),
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
 }
 
 func SnippetView(w http.ResponseWriter, r *http.Request) {
