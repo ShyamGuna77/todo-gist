@@ -6,30 +6,31 @@ import (
 	"net/http"
 )
 
-
-
-func main() {
-	fmt.Println("Hello, Go project!")
+func home(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello from Server "))
 }
 
+func snippetView(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("This is a snippet viewer box"))
+}
 
+func snippetCreate(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("This is a snippet creater  box"))
+}
+func main() {
 
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", home)
+	mux.HandleFunc("/view", snippetView)
+	mux.HandleFunc("/create", snippetCreate)
+	port := ":3000"
 
-//middleware runs before handlers 
+	fmt.Println("server started on :", port)
 
-// middleware takes a http.Handler and returns a httphndler
+	err := http.ListenAndServe(port, mux)
+	if err != nil {
+		log.Fatal("Error occured on :", err)
 
-// it also returns a http.HandlerFunc which takes resp (w) and req (r) 
+	}
 
-// we return middleware usng next like next.ServeHttp(w,r)
-
-
-
-func LoggingMiddleware(next http.Handler) http.Handler {
-
-   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	log.Println("Before server started")
-	next.ServeHTTP(w,r)
-	log.Println("After server started")
-   })
 }
