@@ -20,7 +20,7 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
+	mux.HandleFunc("/{$}", home)
 	mux.HandleFunc("/view", snippetView)
 	mux.HandleFunc("/create", snippetCreate)
 	port := ":3000"
