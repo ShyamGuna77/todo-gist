@@ -1,32 +1,31 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/ShyamGuna77/rest-sms/internal/web"
 )
 
 func main() {
 
-	mux := http.NewServeMux()
+	addr := flag.String("addr", ":4000", "HTTP network address")
 
-	fileserver := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileserver))
-
-	mux.HandleFunc("GET /{$}", web.Home)
-	mux.HandleFunc("GET /snippet/view/{id}", web.SnippetView)
-	mux.HandleFunc("GET /snippet/create", web.SnippetCreate)
-	mux.HandleFunc("POST /snippet/create", web.SnippetCreatePost)
-	port := ":3000"
-
-	fmt.Println("server started on :", port)
-
-	err := http.ListenAndServe(port, mux)
-	if err != nil {
-		log.Fatal("Error occured on :", err)
-
+	flag.Parse()
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	app := &web.Application{
+		Logger: logger,
 	}
+	
+
+	logger.Info("server started on :", "addr", *addr)
+
+	router := app.Routes()
+
+	err := http.ListenAndServe(*addr, router)
+	log.Fatal(err)
 
 }
