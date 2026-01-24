@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ShyamGuna77/rest-sms/internal/models"
 	"github.com/ShyamGuna77/rest-sms/internal/web"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -26,7 +27,8 @@ func main() {
 	defer db.Close()
 	logger.Info("database connection pool established")
 	app := &web.Application{
-		Logger: logger,
+		Logger:   logger,
+		Snippets: &models.SnippetModel{DB: db},
 	}
 
 	logger.Info("server started on :", "addr", *addr)
