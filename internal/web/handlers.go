@@ -3,8 +3,10 @@ package web
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
@@ -25,25 +27,25 @@ func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
+	files := []string{
+		filepath.Join("ui", "html", "base.html"),
+		filepath.Join("ui", "html", "partials", "nav.html"),
+		filepath.Join("ui", "html", "pages", "home.html"),
 	}
 
-	// files := []string{
-	// 	filepath.Join("ui", "html", "base.html"),
-	// 	filepath.Join("ui", "html", "partials", "nav.html"),
-	// 	filepath.Join("ui", "html", "pages", "home.html"),
-	// }
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.ServerError(w, r, err)
+		return
+	}
 
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.ServerError(w, r, err)
-	// 	return
-	// }
-	// err = ts.ExecuteTemplate(w, "base", nil)
-	// if err != nil {
-	// 	app.ServerError(w, r, err)
-	// }
+	data := templateData{
+		Snippets: snippets,
+	}
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.ServerError(w, r, err)
+	}
 
 }
 
@@ -65,7 +67,25 @@ func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%+v", snippet)
+	files := []string{
+		filepath.Join("ui", "html", "base.html"),
+		filepath.Join("ui", "html", "partials", "nav.html"),
+		filepath.Join("ui", "html", "pages", "view.html"),
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.ServerError(w, r, err)
+		return
+	}
+
+	data := templateData{
+		Snippet: snippet,
+	}
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.ServerError(w, r, err)
+	}
 }
 
 func (app *Application) SnippetCreate(w http.ResponseWriter, r *http.Request) {
