@@ -3,10 +3,8 @@ package web
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"log/slog"
 	"net/http"
-	"path/filepath"
 	"strconv"
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
@@ -20,21 +18,32 @@ type Application struct {
 func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
 
-	files := []string{
-		filepath.Join("ui", "html", "base.html"),
-		filepath.Join("ui", "html", "partials", "nav.html"),
-		filepath.Join("ui", "html", "pages", "home.html"),
-	}
+	snippets, err := app.Snippets.Latest()
 
-	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		app.ServerError(w, r, err)
 		return
 	}
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.ServerError(w, r, err)
+
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
 	}
+
+	// files := []string{
+	// 	filepath.Join("ui", "html", "base.html"),
+	// 	filepath.Join("ui", "html", "partials", "nav.html"),
+	// 	filepath.Join("ui", "html", "pages", "home.html"),
+	// }
+
+	// ts, err := template.ParseFiles(files...)
+	// if err != nil {
+	// 	app.ServerError(w, r, err)
+	// 	return
+	// }
+	// err = ts.ExecuteTemplate(w, "base", nil)
+	// if err != nil {
+	// 	app.ServerError(w, r, err)
+	// }
 
 }
 
