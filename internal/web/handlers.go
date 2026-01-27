@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -12,7 +13,7 @@ import (
 )
 
 type Application struct {
-	Logger *slog.Logger
+	Logger   *slog.Logger
 	Snippets *models.SnippetModel
 }
 
@@ -44,7 +45,18 @@ func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+
+	snippet, err := app.Snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(w, r)
+		} else {
+			app.ServerError(w, r, err)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (app *Application) SnippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -54,15 +66,15 @@ func (app *Application) SnippetCreate(w http.ResponseWriter, r *http.Request) {
 func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	// w.WriteHeader(http.StatusCreated)
 	// w.Write([]byte("THis is a Post request"))
-	title := "O snail"
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
+	title := "Testing Todo"
+	content := "Watch Naruto\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
 	expires := 7
 	// Pass the data to the SnippetModel.Insert() method, receiving the
 	// ID of the new record back.
 	id, err := app.Snippets.Insert(title, content, expires)
 	if err != nil {
-	    app.ServerError(w, r, err)
-	    return
+		app.ServerError(w, r, err)
+		return
 	}
 	// Redirect the user to the relevant page for the snippet.
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
