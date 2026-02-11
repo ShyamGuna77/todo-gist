@@ -27,7 +27,7 @@ func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 	data := TemplateData{
 		Snippets: snippets,
 	}
-	app.render(w, r, http.StatusOK, "home.html", data)
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
 }
 func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
