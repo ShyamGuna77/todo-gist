@@ -6,86 +6,48 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
-	"path/filepath"
 	"strconv"
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
 )
 
 type Application struct {
-	Logger   *slog.Logger
-	Snippets *models.SnippetModel
+	Logger        *slog.Logger
+	Snippets      *models.SnippetModel
+	TemplateCache map[string]*template.Template
 }
 
 func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
-
 	snippets, err := app.Snippets.Latest()
-
 	if err != nil {
 		app.ServerError(w, r, err)
 		return
 	}
-
-	files := []string{
-		filepath.Join("ui", "html", "base.html"),
-		filepath.Join("ui", "html", "partials", "nav.html"),
-		filepath.Join("ui", "html", "pages", "home.html"),
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.ServerError(w, r, err)
-		return
-	}
-
-	data := templateData{
+	data := TemplateData{
 		Snippets: snippets,
 	}
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.ServerError(w, r, err)
-	}
-
+	app.render(w, r, http.StatusOK, "home.html", data)
 }
-
 func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
-
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.NotFound(w, r)
 		return
 	}
-
 	snippet, err := app.Snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
-			http.NotFound(w, r)
+			app.NotFound(w, r)
 		} else {
 			app.ServerError(w, r, err)
 		}
 		return
 	}
-
-	files := []string{
-		filepath.Join("ui", "html", "base.html"),
-		filepath.Join("ui", "html", "partials", "nav.html"),
-		filepath.Join("ui", "html", "pages", "view.html"),
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.ServerError(w, r, err)
-		return
-	}
-
-	data := templateData{
+	data := TemplateData{
 		Snippet: snippet,
 	}
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.ServerError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "view.html", data)
 }
 
 func (app *Application) SnippetCreate(w http.ResponseWriter, r *http.Request) {

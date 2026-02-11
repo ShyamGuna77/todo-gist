@@ -25,10 +25,16 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
+	templateCache, err := web.NewTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 	logger.Info("database connection pool established")
 	app := &web.Application{
-		Logger:   logger,
-		Snippets: &models.SnippetModel{DB: db},
+		Logger:        logger,
+		Snippets:      &models.SnippetModel{DB: db},
+		TemplateCache: templateCache,
 	}
 
 	logger.Info("server started on :", "addr", *addr)
