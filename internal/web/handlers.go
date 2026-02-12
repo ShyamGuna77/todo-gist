@@ -18,7 +18,7 @@ type Application struct {
 }
 
 func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Server", "Go")
+
 	snippets, err := app.Snippets.Latest()
 	if err != nil {
 		app.ServerError(w, r, err)
