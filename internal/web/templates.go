@@ -13,6 +13,7 @@ type TemplateData struct {
 	Snippets []models.Snippet
 	CurrentYear int
 	Form any
+	Flash string
 }
 
 // humanDate formats a time in the form "11 Feb 2026".

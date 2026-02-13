@@ -7,9 +7,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/alexedwards/scs/v2"
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
 	"github.com/ShyamGuna77/rest-sms/internal/web"
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -31,10 +35,17 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("database connection pool established")
+	formDecoder := form.NewDecoder()
+
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &web.Application{
 		Logger:        logger,
 		Snippets:      &models.SnippetModel{DB: db},
 		TemplateCache: templateCache,
+		FormDecoder:   formDecoder,
+		SessionManager: sessionManager,
 	}
 
 	logger.Info("server started on :", "addr", *addr)
