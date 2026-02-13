@@ -7,10 +7,9 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
+	"github.com/ShyamGuna77/rest-sms/internal/validator"
 )
 
 type Application struct {
@@ -20,10 +19,10 @@ type Application struct {
 }
 
 type SnippetCreateForm struct {
-	Title       string
-	Content     string
-	Expires     int
-	FieldErrors map[string]string
+	Title   string
+	Content string
+	Expires int
+	validator.Validator
 }
 
 func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
@@ -87,30 +86,19 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.ClientError(w, http.StatusBadRequest)
 		return
 	}
-	fieldErrors := make(map[string]string)
+
 	form := SnippetCreateForm{
-		Title:       title,
-		Content:     content,
-		Expires:     expires,
-		FieldErrors: fieldErrors,
+		Title:   title,
+		Content: content,
+		Expires: expires,
 	}
 
-	if strings.TrimSpace(form.Title) == "" {
-		fieldErrors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		fieldErrors["title"] = "This field cannot be more than 100 characters"
-	}
-
-	if strings.TrimSpace(form.Content) == "" {
-		fieldErrors["content"] = "This field cannot be blank"
-	}
-	
-	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
-		fieldErrors["expires"] = "This field must be 1, 7 or 365"
-	}
-
-	if len(form.FieldErrors) > 0 {
-		data:=app.newTemplateData(r)
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters")
+	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
+	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field must be 1, 7 or 365")
+	if !form.Valid() {
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "create.html", data)
 		return
@@ -120,5 +108,5 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.ServerError(w, r, err)
 		return
 	}
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)	
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
