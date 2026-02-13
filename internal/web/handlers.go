@@ -24,9 +24,9 @@ func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 		app.ServerError(w, r, err)
 		return
 	}
-	data := TemplateData{
-		Snippets: snippets,
-	}
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
+
 	app.render(w, r, http.StatusOK, "home.html", data)
 }
 func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
@@ -44,14 +44,14 @@ func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	data := TemplateData{
-		Snippet: snippet,
-	}
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
 	app.render(w, r, http.StatusOK, "view.html", data)
 }
 
 func (app *Application) SnippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("This is a snippet creater  box"))
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "create.html", data)
 }
 
 func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request) {

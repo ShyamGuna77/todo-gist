@@ -5,11 +5,13 @@ import (
 	"html/template"
 	"path/filepath"
 	"time"
+	"net/http"
 )
 
 type TemplateData struct {
 	Snippet  models.Snippet
 	Snippets []models.Snippet
+	CurrentYear int
 }
 
 // humanDate formats a time in the form "11 Feb 2026".
@@ -22,6 +24,12 @@ func humanDate(t time.Time) string {
 
 var functions = template.FuncMap{
 	"humanDate": humanDate,
+}
+
+func (app *Application) newTemplateData(r *http.Request) TemplateData {
+return TemplateData{
+CurrentYear: time.Now().Year(),
+}
 }
 
 func NewTemplateCache() (map[string]*template.Template, error) {
