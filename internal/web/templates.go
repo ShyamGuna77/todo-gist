@@ -1,19 +1,20 @@
 package web
 
 import (
-	"github.com/ShyamGuna77/rest-sms/internal/models"
 	"html/template"
+	"net/http"
 	"path/filepath"
 	"time"
-	"net/http"
+
+	"github.com/ShyamGuna77/rest-sms/internal/models"
 )
 
 type TemplateData struct {
-	Snippet  models.Snippet
-	Snippets []models.Snippet
+	Snippet     models.Snippet
+	Snippets    []models.Snippet
 	CurrentYear int
-	Form any
-	Flash string
+	Form        any
+	Flash       string
 }
 
 // humanDate formats a time in the form "11 Feb 2026".
@@ -29,9 +30,10 @@ var functions = template.FuncMap{
 }
 
 func (app *Application) newTemplateData(r *http.Request) TemplateData {
-return TemplateData{
-CurrentYear: time.Now().Year(),
-}
+	return TemplateData{
+		CurrentYear: time.Now().Year(),
+		Flash:       app.SessionManager.PopString(r.Context(), "flash"),
+	}
 }
 
 func NewTemplateCache() (map[string]*template.Template, error) {
