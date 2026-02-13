@@ -10,19 +10,21 @@ import (
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
 	"github.com/ShyamGuna77/rest-sms/internal/validator"
+	"github.com/go-playground/form/v4" 
 )
 
 type Application struct {
 	Logger        *slog.Logger
 	Snippets      *models.SnippetModel
 	TemplateCache map[string]*template.Template
+	FormDecoder   *form.Decoder
 }
 
 type SnippetCreateForm struct {
-	Title   string
-	Content string
-	Expires int
-	validator.Validator
+	Title   string `form:"title"`
+	Content string `form:"content"`
+	Expires int `form:"expires"`
+	validator.Validator `form:"-"`
 }
 
 func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
@@ -71,27 +73,17 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.ClientError(w, http.StatusBadRequest)
 		return
 	}
-	// Use the r.PostForm.Get() method to retrieve the title and content
-	// from the r.PostForm map.
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-
-	// The r.PostForm.Get() method always returns the form data as a *string*.
-	// However, we're expecting our expires value to be a number, and want to
-	// represent it in our Go code as an integer. So we need to manually convert
-	// the form data to an integer using strconv.Atoi(), and send a 400 Bad
-	// Request response if the conversion fails.
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-	if err != nil {
-		app.ClientError(w, http.StatusBadRequest)
-		return
-	}
-
-	form := SnippetCreateForm{
-		Title:   title,
-		Content: content,
-		Expires: expires,
-	}
+	
+	 var form SnippetCreateForm
+    // Call the Decode() method of the form decoder, passing in the current
+    // request and *a pointer* to our snippetCreateForm struct. This will
+    // essentially fill our struct with the relevant values from the HTML form.
+    // If there is a problem, we return a 400 Bad Request response to the client.
+    err = app.decodeError(r, &form)
+    if err != nil {
+        app.ClientError(w, http.StatusBadRequest)
+        return
+    }
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters")

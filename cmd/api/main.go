@@ -11,6 +11,7 @@ import (
 	"github.com/ShyamGuna77/rest-sms/internal/models"
 	"github.com/ShyamGuna77/rest-sms/internal/web"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-playground/form/v4"
 )
 
 func main() {
@@ -31,11 +32,14 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("database connection pool established")
+	formDecoder := form.NewDecoder()
 	app := &web.Application{
 		Logger:        logger,
 		Snippets:      &models.SnippetModel{DB: db},
 		TemplateCache: templateCache,
+		FormDecoder:   formDecoder,
 	}
+
 
 	logger.Info("server started on :", "addr", *addr)
 
