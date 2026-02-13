@@ -1,6 +1,10 @@
 package web
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 func (app *Application) Routes() http.Handler {
 	mux := http.NewServeMux()
@@ -12,6 +16,9 @@ func (app *Application) Routes() http.Handler {
 	mux.HandleFunc("GET /snippet/view/{id}", app.SnippetView)
 	mux.HandleFunc("GET /snippet/create", app.SnippetCreate)
 	mux.HandleFunc("POST /snippet/create", app.SnippetCreatePost)
-	return commonHeaders(mux)
+
+
+	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+	return standard.Then(mux)
 
 }
