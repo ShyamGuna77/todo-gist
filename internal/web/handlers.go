@@ -10,20 +10,22 @@ import (
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
 	"github.com/ShyamGuna77/rest-sms/internal/validator"
-	"github.com/go-playground/form/v4" 
+	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
 )
 
 type Application struct {
-	Logger        *slog.Logger
-	Snippets      *models.SnippetModel
-	TemplateCache map[string]*template.Template
-	FormDecoder   *form.Decoder
+	Logger         *slog.Logger
+	Snippets       *models.SnippetModel
+	TemplateCache  map[string]*template.Template
+	FormDecoder    *form.Decoder
+	SessionManager *scs.SessionManager
 }
 
 type SnippetCreateForm struct {
-	Title   string `form:"title"`
-	Content string `form:"content"`
-	Expires int `form:"expires"`
+	Title               string `form:"title"`
+	Content             string `form:"content"`
+	Expires             int    `form:"expires"`
 	validator.Validator `form:"-"`
 }
 
@@ -53,9 +55,12 @@ func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
 			app.ServerError(w, r, err)
 		}
 		return
+
 	}
+	flash := app.SessionManager.PopString(r.Context(), "flash")
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
+	data.Flash = flash
 	app.render(w, r, http.StatusOK, "view.html", data)
 }
 
@@ -73,17 +78,17 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.ClientError(w, http.StatusBadRequest)
 		return
 	}
-	
-	 var form SnippetCreateForm
-    // Call the Decode() method of the form decoder, passing in the current
-    // request and *a pointer* to our snippetCreateForm struct. This will
-    // essentially fill our struct with the relevant values from the HTML form.
-    // If there is a problem, we return a 400 Bad Request response to the client.
-    err = app.decodeError(r, &form)
-    if err != nil {
-        app.ClientError(w, http.StatusBadRequest)
-        return
-    }
+
+	var form SnippetCreateForm
+	// Call the Decode() method of the form decoder, passing in the current
+	// request and *a pointer* to our snippetCreateForm struct. This will
+	// essentially fill our struct with the relevant values from the HTML form.
+	// If there is a problem, we return a 400 Bad Request response to the client.
+	err = app.decodeError(r, &form)
+	if err != nil {
+		app.ClientError(w, http.StatusBadRequest)
+		return
+	}
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters")
@@ -100,5 +105,7 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.ServerError(w, r, err)
 		return
 	}
+
+	app.SessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
