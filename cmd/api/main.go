@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 
@@ -41,17 +42,26 @@ func main() {
 	sessionManager.Lifetime = 12 * time.Hour
 
 	app := &web.Application{
-		Logger:        logger,
-		Snippets:      &models.SnippetModel{DB: db},
-		TemplateCache: templateCache,
-		FormDecoder:   formDecoder,
+		Logger:         logger,
+		Snippets:       &models.SnippetModel{DB: db},
+		Users:          &models.UserModel{DB: db},
+		TemplateCache:  templateCache,
+		FormDecoder:    formDecoder,
 		SessionManager: sessionManager,
 	}
 
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	srv := &http.Server{
-		Addr:     *addr,
-		Handler:  app.Routes(),
-		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		Addr:         *addr,
+		Handler:      app.Routes(),
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.Info("server started on :", "addr", srv.Addr)

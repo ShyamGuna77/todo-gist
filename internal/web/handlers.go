@@ -17,6 +17,7 @@ import (
 type Application struct {
 	Logger         *slog.Logger
 	Snippets       *models.SnippetModel
+	Users          *models.UserModel
 	TemplateCache  map[string]*template.Template
 	FormDecoder    *form.Decoder
 	SessionManager *scs.SessionManager
@@ -108,4 +109,31 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	app.SessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+}
+
+
+// userr authentication 
+type userSignupForm struct {
+    Name                string `form:"name"`
+    Email               string `form:"email"`
+    Password            string `form:"password"`
+    validator.Validator `form:"-"`
+}
+
+func (app *Application) userSignup(w http.ResponseWriter, r *http.Request) {
+    data := app.newTemplateData(r)
+    data.Form = userSignupForm{}
+    app.render(w, r, http.StatusOK, "signup.html", data)	
+}
+func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintln(w, "Create a new user...")
+}
+func (app *Application) userLogin(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintln(w, "Display a form for logging in a user...")
+}
+func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintln(w, "Authenticate and login the user...")
+}
+func (app *Application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintln(w, "Logout the user...")
 }
