@@ -40,13 +40,11 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 12 * time.Hour
 
-	 sessionManager.Cookie.Secure = true
-
 	app := &web.Application{
-		Logger:         logger,
-		Snippets:       &models.SnippetModel{DB: db},
-		TemplateCache:  templateCache,
-		FormDecoder:    formDecoder,
+		Logger:        logger,
+		Snippets:      &models.SnippetModel{DB: db},
+		TemplateCache: templateCache,
+		FormDecoder:   formDecoder,
 		SessionManager: sessionManager,
 	}
 
