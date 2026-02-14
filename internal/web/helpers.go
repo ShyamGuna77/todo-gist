@@ -46,6 +46,7 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, status in
 		app.ServerError(w, r, err)
 		return
 	}
+
 	// Write out the provided HTTP status code ('200 OK', '400 Bad Request' etc).
 	w.WriteHeader(status)
 	buf.WriteTo(w)

@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"log"
+
 	"log/slog"
 	"net/http"
 	"os"
@@ -48,12 +48,19 @@ func main() {
 		SessionManager: sessionManager,
 	}
 
-	logger.Info("server started on :", "addr", *addr)
+	srv := &http.Server{
+		Addr:     *addr,
+		Handler:  app.Routes(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
 
-	router := app.Routes()
+	logger.Info("server started on :", "addr", srv.Addr)
 
-	err = http.ListenAndServe(*addr, router)
-	log.Fatal(err)
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 }
 
