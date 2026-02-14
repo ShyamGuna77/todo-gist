@@ -56,12 +56,9 @@ func (app *Application) SnippetView(w http.ResponseWriter, r *http.Request) {
 			app.ServerError(w, r, err)
 		}
 		return
-
 	}
-	flash := app.SessionManager.PopString(r.Context(), "flash")
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
-	data.Flash = flash
 	app.render(w, r, http.StatusOK, "view.html", data)
 }
 
@@ -85,7 +82,7 @@ func (app *Application) SnippetCreatePost(w http.ResponseWriter, r *http.Request
 	// request and *a pointer* to our snippetCreateForm struct. This will
 	// essentially fill our struct with the relevant values from the HTML form.
 	// If there is a problem, we return a 400 Bad Request response to the client.
-	err = app.decodeError(r, &form)
+	err = app.DecodeForm(r, &form)
 	if err != nil {
 		app.ClientError(w, http.StatusBadRequest)
 		return

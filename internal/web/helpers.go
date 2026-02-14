@@ -59,19 +59,14 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, status in
 }
 
 
-func (app *Application) decodeError ( r *http.Request, dst any) error {
-	  err := r.ParseForm()
-
-	  if err != nil {
+// DecodeForm parses the request form and decodes it into dst. Returns an error on failure.
+func (app *Application) DecodeForm(r *http.Request, dst any) error {
+	if err := r.ParseForm(); err != nil {
 		return err
-	  }
-
-	err =  app.FormDecoder.Decode(dst , r.PostForm)
-
-	if err != nil {
+	}
+	if err := app.FormDecoder.Decode(dst, r.PostForm); err != nil {
 		var invalidDecodeError *form.InvalidDecoderError
-		
-		if errors.As(err , &invalidDecodeError){
+		if errors.As(err, &invalidDecodeError) {
 			panic(err)
 		}
 		return err
