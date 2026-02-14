@@ -46,6 +46,7 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, status in
 		app.ServerError(w, r, err)
 		return
 	}
+
 	// Write out the provided HTTP status code ('200 OK', '400 Bad Request' etc).
 	w.WriteHeader(status)
 	buf.WriteTo(w)
@@ -57,20 +58,19 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, status in
 	// }
 }
 
+func (app *Application) decodeError(r *http.Request, dst any) error {
+	err := r.ParseForm()
 
-func (app *Application) decodeError ( r *http.Request, dst any) error {
-	  err := r.ParseForm()
-
-	  if err != nil {
+	if err != nil {
 		return err
-	  }
+	}
 
-	err =  app.FormDecoder.Decode(dst , r.PostForm)
+	err = app.FormDecoder.Decode(dst, r.PostForm)
 
 	if err != nil {
 		var invalidDecodeError *form.InvalidDecoderError
-		
-		if errors.As(err , &invalidDecodeError){
+
+		if errors.As(err, &invalidDecodeError) {
 			panic(err)
 		}
 		return err

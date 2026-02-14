@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"log"
+
 	"log/slog"
 	"net/http"
 	"os"
@@ -40,20 +40,29 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 12 * time.Hour
 
+	 sessionManager.Cookie.Secure = true
+
 	app := &web.Application{
-		Logger:        logger,
-		Snippets:      &models.SnippetModel{DB: db},
-		TemplateCache: templateCache,
-		FormDecoder:   formDecoder,
+		Logger:         logger,
+		Snippets:       &models.SnippetModel{DB: db},
+		TemplateCache:  templateCache,
+		FormDecoder:    formDecoder,
 		SessionManager: sessionManager,
 	}
 
-	logger.Info("server started on :", "addr", *addr)
+	srv := &http.Server{
+		Addr:     *addr,
+		Handler:  app.Routes(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
 
-	router := app.Routes()
+	logger.Info("server started on :", "addr", srv.Addr)
 
-	err = http.ListenAndServe(*addr, router)
-	log.Fatal(err)
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 }
 
