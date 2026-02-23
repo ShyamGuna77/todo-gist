@@ -21,6 +21,10 @@ type Application struct {
 	TemplateCache  map[string]*template.Template
 	FormDecoder    *form.Decoder
 	SessionManager *scs.SessionManager
+
+	RateLimitEnabled bool
+	RateLimitRPS     float64
+	RateLimitBurst   int
 }
 
 type SnippetCreateForm struct {
@@ -152,6 +156,7 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
     // status code.
     if !form.Valid() {
         data := app.newTemplateData(r)
+        form.Password = "" // never send password back to client
         data.Form = form
         app.render(w, r, http.StatusUnprocessableEntity, "signup.html", data)
         return
@@ -162,6 +167,7 @@ func (app *Application) userSignupPost(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         if errors.Is(err, models.ErrDuplicateEmail) {
             form.AddFieldError("email", "Email address is already in use")
+            form.Password = "" // never send password back to client
             data := app.newTemplateData(r)
             data.Form = form
             app.render(w, r, http.StatusUnprocessableEntity, "signup.html", data)
@@ -206,6 +212,7 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
     form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
     if !form.Valid() {
         data := app.newTemplateData(r)
+        form.Password = "" // never send password back to client
         data.Form = form
         app.render(w, r, http.StatusUnprocessableEntity, "login.html", data)
         return
@@ -216,6 +223,7 @@ func (app *Application) userLoginPost(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         if errors.Is(err, models.ErrInvalidCredentials) {
             form.AddNonFieldError("Email or password is incorrect")
+            form.Password = "" // never send password back to client
             data := app.newTemplateData(r)
             data.Form = form
             app.render(w, r, http.StatusUnprocessableEntity, "login.html", data)

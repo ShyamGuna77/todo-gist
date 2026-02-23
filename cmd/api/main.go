@@ -40,6 +40,8 @@ func main() {
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
+	sessionManager.Cookie.HttpOnly = true
 
 	app := &web.Application{
 		Logger:         logger,
@@ -48,6 +50,9 @@ func main() {
 		TemplateCache:  templateCache,
 		FormDecoder:    formDecoder,
 		SessionManager: sessionManager,
+		RateLimitEnabled: true,
+		RateLimitRPS:     2,  // requests per second (per IP)
+		RateLimitBurst:   4,  // max burst size (per IP)
 	}
 
 	tlsConfig := &tls.Config{

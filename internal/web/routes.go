@@ -29,7 +29,7 @@ func (app *Application) Routes() http.Handler {
 	mux.Handle("GET /snippet/create", protected.ThenFunc(app.SnippetCreate))
 	mux.Handle("POST /snippet/create", protected.ThenFunc(app.SnippetCreatePost))
 
-	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders, app.rateLimit)
 	return standard.Then(mux)
 
 }

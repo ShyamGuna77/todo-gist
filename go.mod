@@ -10,8 +10,9 @@ require (
 require golang.org/x/crypto v0.48.0 // indirect
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect
 	github.com/justinas/nosurf v1.2.0 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
 )
 
 require (
