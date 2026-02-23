@@ -1,15 +1,11 @@
-{{define "title"}}Signup{{end}}
+{{define "title"}}Login{{end}}
 {{define "main"}}
-<form action='/user/signup' method='POST' novalidate>
+<form action='/user/login' method='POST' novalidate>
     <!-- Include the CSRF token -->
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-    <div>
-        <label>Name:</label>
-        {{with .Form.FieldErrors.name}}
-            <label class='error'>{{.}}</label>
-        {{end}}
-        <input type='text' name='name' value='{{.Form.Name}}'>
-    </div>
+    {{range .Form.NonFieldErrors}}
+        <div class='error'>{{.}}</div>
+    {{end}}
     <div>
         <label>Email:</label>
         {{with .Form.FieldErrors.email}}
@@ -25,7 +21,7 @@
         <input type='password' name='password'>
     </div>
     <div>
-        <input type='submit' value='Signup'>
+        <input type='submit' value='Login'>
     </div>
 </form>
 {{end}}

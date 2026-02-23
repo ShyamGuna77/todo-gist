@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ShyamGuna77/rest-sms/internal/models"
+	"github.com/justinas/nosurf"
 )
 
 type TemplateData struct {
@@ -15,6 +16,8 @@ type TemplateData struct {
 	CurrentYear int
 	Form        any
 	Flash       string
+	IsAuthenticated bool
+	CSRFToken       string
 }
 
 // humanDate formats a time in the form "11 Feb 2026".
@@ -33,6 +36,8 @@ func (app *Application) newTemplateData(r *http.Request) TemplateData {
 	return TemplateData{
 		CurrentYear: time.Now().Year(),
 		Flash:       app.SessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
+		CSRFToken: nosurf.Token(r),
 	}
 }
 
