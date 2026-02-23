@@ -38,6 +38,7 @@ func (v *Validator) AddFieldError(key, message string) {
 func (v *Validator) AddNonFieldError(message string) {
     v.NonFieldErrors = append(v.NonFieldErrors, message)
 }
+
 // CheckField() adds an error message to the FieldErrors map only if a
 // validation check is not 'ok'.
 func (v *Validator) CheckField(ok bool, key, message string) {
