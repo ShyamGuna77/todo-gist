@@ -10,6 +10,11 @@ require (
 require golang.org/x/crypto v0.48.0 // indirect
 
 require (
+	github.com/justinas/nosurf v1.2.0 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
+)
+
+require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/alexedwards/scs/mysqlstore v0.0.0-20251002162104-209de6e426de
 	github.com/alexedwards/scs/v2 v2.9.0 // indirect
